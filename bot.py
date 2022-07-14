@@ -275,6 +275,12 @@ def document_processing(message):
             )
 
         return
+    
+    bot.reply_to(
+        message,
+        'Неизвестный формат файла.\n' + \
+        'Я работаю только с zip архивами и .jpg .jpeg .png изображениями.'
+    )
 
 @bot.message_handler(content_types = ['document'])
 def document(message):
