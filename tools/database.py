@@ -66,6 +66,19 @@ class DataBaseController:
         if self.cursor.rowcount == 0:
             raise UserNotFoundException()
 
+    def user_update_mark(self, telegram_id, mark):
+        telegram_id_value = '\'' + str(telegram_id) + '\''
+        mark_value = '\'' + str(mark) + '\''
+
+        execute = \
+                '''
+                UPDATE users SET mark = {} WHERE telegram_id = {};
+                '''.format(mark_value, telegram_id_value)
+        self.cursor.execute(execute)
+        if self.cursor.rowcount == 0:
+            raise UserNotFoundException()
+        
+
 class WrongCommandException(MyException):
     def __init__(self):
         message = 'Неверная комманда или её формат. ' + \

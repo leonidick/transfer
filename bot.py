@@ -7,7 +7,7 @@ import magic
 import glob
 from PIL import Image
 from tools.image import ImageProcessor
-from tools.database import DataBaseController
+from tools.database import DataBaseController, UserNotFoundException
 
 token = '5577792621:AAEkVhfKReVZIzJl7j0YXU55kCeuOOKzz3c'
 bot = telebot.TeleBot(token)
@@ -46,6 +46,23 @@ def check_user(message):
         )
     return user_exist
 
+def get_mark(message):
+    controller = DataBaseController()
+    telegram_id = message.from_user.id
+    id_mark_list = [
+        (entry[1], entry[3])
+            for entry in controller.user_list()
+    ]
+    for entry in id_mark_list:
+        if entry[0] == str(telegram_id):
+            mark = entry[1]
+            if mark == None:
+                return DEFAULT_MARK
+            return mark
+            
+
+
+
 @bot.message_handler(commands = ['start'])
 def start(message):
     if not check_user(message):
@@ -64,7 +81,12 @@ def help(message):
     answer = 'Я - Бот. Я добавляю скрытый водяной знак в изображения.\n' + \
              'Отправь мне архив и я добавлю метку во все изображения в нём.\n' + \
              'Отправь мне изображение документом и я смогу добавить в него метку ' + \
-             'либо распознать её там.'
+             'либо распознать её там.\n\n' + \
+             'Команды:\n' + \
+             '/help - показать мануал\n' + \
+             '/info - показать текущую метку\n' + \
+             '/set - установить новую метку (не влияет на других пользователей)\n' + \
+             '/reset - установить метку по умолчанию (не влияет на других пользователей)'
     bot.reply_to(
         message,
         answer
@@ -148,7 +170,7 @@ def image_next_step_handler(message, file_path, mark, mime_type):
 def document_processing(message):
     userdir = os.path.join(tmp, str(message.from_user.id))
     make_clear_dir(userdir)
-    mark = DEFAULT_MARK
+    mark = get_mark(message)
  
     def download_file(file_id):
         file_info = bot.get_file(file_id)
@@ -267,7 +289,50 @@ def document(message):
             str(ex)
         )
     # gc.collect()
-        
+
+def set_mark(message, mark):
+    controller = DataBaseController()
+    controller.user_update_mark(message.from_user.id, mark)
+
+def set_mark_next_step_handler(message):
+    try:
+        set_mark(message, message.text)
+        bot.reply_to(
+            message,
+            'Метка \'{}\' установлена.'.format(get_mark(message))
+        )
+    except UserNotFoundException as ex:
+        bot.reply_to(
+            message,
+            str(ex)
+        )
+
+@bot.message_handler(commands = ['set'])
+def set(message):
+    bot_message = bot.reply_to(
+        message,
+        'Введите метку'
+    )
+    bot.register_next_step_handler(
+        bot_message,
+        set_mark_next_step_handler
+    )
+
+@bot.message_handler(commands = ['reset'])
+def reset(message):
+    set_mark(message, DEFAULT_MARK)
+    bot.reply_to(
+        message,
+        'Метка сброшена. Ваша метка: \'{}\'.'.format(get_mark(message))
+    )
+
+@bot.message_handler(commands = ['info'])
+def info(message):
+    bot.reply_to(
+        message,
+        'Ваша текущая метка: \'{}\'.'.format(get_mark(message))
+    )
+
 def make_clear_dir(path):
     if os.path.isdir(path):
         shutil.rmtree(path)
