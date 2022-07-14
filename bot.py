@@ -145,8 +145,6 @@ def image_next_step_handler(message, file_path, mark, mime_type):
                     response,
                     caption = 'Метка \'{}\' добавлена.'.format(mark)
                 )
-            os.remove(file_path)
-            return
 
         if message.text == DETECT_BUTTON_TEXT:
             has_mark = ImageProcessor.detect_mark(image, mark)
@@ -164,8 +162,13 @@ def image_next_step_handler(message, file_path, mark, mime_type):
                     caption = 'Метка \'{}\' {}.' \
                         .format(mark, 'обнаружена' if has_mark else 'НЕ обнаружена')
                 )
-            os.remove(file_path)
-            return
+        userdir = os.path.join(
+            tmp,
+            str(message.from_user.id)
+        )
+        if os.path.isdir(userdir): 
+            shutil.rmtree(userdir)
+
 
 def document_processing(message):
     userdir = os.path.join(tmp, str(message.from_user.id))
@@ -273,6 +276,9 @@ def document_processing(message):
                 message.chat.id,
                 response,
             )
+        
+        if os.path.isdir(userdir):
+            shutil.rmtree(userdir)
 
         return
     
