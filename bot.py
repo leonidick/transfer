@@ -321,6 +321,9 @@ def set_mark_next_step_handler(message):
 
 @bot.message_handler(commands = ['set'])
 def set(message):
+    if not check_user(message):
+        return
+
     bot_message = bot.reply_to(
         message,
         'Введите метку'
@@ -332,6 +335,9 @@ def set(message):
 
 @bot.message_handler(commands = ['reset'])
 def reset(message):
+    if not check_user(message):
+        return
+
     set_mark(message, DEFAULT_MARK)
     bot.reply_to(
         message,
@@ -340,6 +346,9 @@ def reset(message):
 
 @bot.message_handler(commands = ['info'])
 def info(message):
+    if not check_user(message):
+        return
+
     bot.reply_to(
         message,
         'Ваша текущая метка: \'{}\'.'.format(get_mark(message))
