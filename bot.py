@@ -244,6 +244,8 @@ def document_processing(message):
 
                 byte = zip_file.read(info.filename)
                 opath = os.path.join(userdir, info.filename).encode('utf-8').decode('latin-1')
+                os.makedirs(os.path.dirname(opath), exist_ok=True)
+
                 file = open(opath, 'wb')
                 file.write(byte)
                 file.close()
@@ -317,8 +319,9 @@ def document(message):
     if not check_user(message):
         return
 
+    document_processing(message)
     try:
-        document_processing(message)
+        pass
     except Exception as ex:
         bot.send_message(
             message.chat.id,
