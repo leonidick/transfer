@@ -1,4 +1,5 @@
 import os
+import chardet
 import gc
 import shutil
 import telebot
@@ -241,20 +242,31 @@ def document_processing(message):
                     continue
 
                 byte = zip_file.read(info.filename)
-                file = open(os.path.join(userdir, info.filename).encode('utf-8'), 'wb')
+                opath = os.path.join(userdir, info.filename).encode('utf-8').decode('latin-1')
+                file = open(opath, 'wb')
                 file.write(byte)
                 file.close()
 
             exctract_namelist = glob.iglob(
                 os.path.join(userdir, '**/*'),
                 recursive = True)
+            
             for name in exctract_namelist:
+                name = name.encode('latin-1')
+                
                 if os.path.isdir(name):
                     continue
-                mime = lambda path: magic.from_file(path, mime = True)
+
+                mime = lambda path: magic.from_file(path, mime = True) 
+
                 if mime(name) != 'image/jpeg' and mime(name) != 'image/png':
                     continue
-
+                ''' 
+                bot.reply_to(
+                    message,
+                    str(name) + ' | ' + mime(name)
+                )
+                '''
                 with Image.open(name) as image:
                     image_format = mime(name).split('/')[-1]
                     os.remove(name)
@@ -272,12 +284,14 @@ def document_processing(message):
                 recursive = True
             )
             for name in namelist:
+                name = name.encode('latin-1')
                 if os.path.isdir(name):
                     continue
                 mime = lambda path: magic.from_file(path, mime = True)
                 if mime(name) != 'image/jpeg' and mime(name) != 'image/png':
                     continue
-                arcname = str(name).replace(userdir, '')
+
+                arcname = str(name.decode()).replace(userdir, '')
                 zip_file.write(name, arcname = arcname)
 
         with open(file_path, 'rb') as response:
