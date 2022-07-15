@@ -235,7 +235,16 @@ def document_processing(message):
 
         with zipfile.ZipFile(file_path, mode = 'r') as zip_file:
             os.remove(file_path)
-            zip_file.extractall(userdir)
+            for info in zip_file.infolist():
+                if info.filename.endswith('/'):
+                    os.mkdir(os.path.join(userdir, info.filename))
+                    continue
+
+                byte = zip_file.read(info.filename)
+                file = open(os.path.join(userdir, info.filename).encode('utf-8'), 'wb')
+                file.write(byte)
+                file.close()
+
             exctract_namelist = glob.iglob(
                 os.path.join(userdir, '**/*'),
                 recursive = True)
