@@ -189,6 +189,7 @@ def document_processing(message):
         
         # write downloaded file to disk
         file_path = os.path.join(userdir, telegram_file_name)
+        file_path = file_path.encode('utf-8')
         with open(file_path, 'wb') as file:
             file.write(telegram_file)
         
