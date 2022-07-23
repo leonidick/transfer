@@ -10,7 +10,7 @@ from PIL import Image
 from tools.image import ImageProcessor
 from tools.database import DataBaseController, UserNotFoundException
 
-token = '5577792621:AAEkVhfKReVZIzJl7j0YXU55kCeuOOKzz3c'
+token = 'привет'
 bot = telebot.TeleBot(token)
 DEFAULT_MARK = 'BELARUSIAN COSMETIKS'
 
